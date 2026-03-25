@@ -1,17 +1,37 @@
 import pandas as pd
 
-def show_stats(df_imgs, df_anns, coco_data):
-    print(f"Total Images: {len(df_imgs)}")
-    print(f"Total Annotations: {len(df_anns)}")
+
+coucou = 123
+
+# 1. Nombre total d’images
+def count_images(df_images):
+    return len(df_images)
+
+
+# 2. Nombre total d’annotations
+def count_annotations(df_annotations):
+    return len(df_annotations)
+
+
+# 3. Liste des catégories
+def get_categories(data):
+    # on récupère les catégories dans le JSON
+    categories = data["categories"]
+    return [cat["name"] for cat in categories]
+
+
+# 4. Nombre d’annotations par image
+def annotations_per_image(df_annotations):
+    # groupby = regrouper par image_id
+    return df_annotations.groupby("image_id").size()
+
+
+# 5. Stats sur les annotations par image
+def annotation_stats(df_annotations):
+    counts = df_annotations.groupby("image_id").size()
     
-    # Simple Category mapping
-    cats = {c['id']: c['name'] for c in coco_data.get('categories', [])}
-    df_anns['name'] = df_anns['category_id'].map(cats)
-    
-    print("\n--- Categories Found ---")
-    print(df_anns['name'].value_counts())
-    
-    # Simple Density math
-    stats = df_anns.groupby('image_id').size()
-    print("\n--- Annotations per Image ---")
-    print(f"Avg: {stats.mean():.2f} | Max: {stats.max()} | Min: {stats.min()}")
+    return {
+        "min": counts.min(),
+        "max": counts.max(),
+        "mean": counts.mean()
+    }
