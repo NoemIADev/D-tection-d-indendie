@@ -1,8 +1,5 @@
 import pandas as pd
 
-
-coucou = 123
-
 # 1. Nombre total d’images
 def count_images(df_images):
     return len(df_images)
@@ -35,3 +32,7 @@ def annotation_stats(df_annotations):
         "max": counts.max(),
         "mean": counts.mean()
     }
+
+# 6. Nombre d’images par catégorie
+def images_per_category(df_annotations):
+    return df_annotations.groupby("category_id")["image_id"].nunique()

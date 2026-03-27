@@ -9,12 +9,5 @@ def load_coco_json():
 def get_dataframes(data):
     df_images = pd.DataFrame(data["images"])
     df_annotations = pd.DataFrame(data["annotations"])
-    return df_images, df_annotations
-
-
-# TEST (important sinon ton fichier sert à rien)
-data = load_coco_json()
-df_images, df_annotations = get_dataframes(data)
-
-print(df_images.head())
-print(df_annotations.head())
+    df_categories = pd.DataFrame(data["categories"])
+    return df_images, df_annotations, df_categories

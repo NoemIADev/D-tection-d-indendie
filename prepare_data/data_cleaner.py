@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 
 def get_extensions(image_folder):
     return {os.path.splitext(f)[1] for f in os.listdir(image_folder)}
@@ -13,33 +14,38 @@ def find_annotations_without_images(images, annotations):
     return [ann for ann in annotations if ann["image_id"] not in image_ids]
 
 def clean_data(data, image_folder, output_path):
+    
     images = data["images"]
     annotations = data["annotations"]
 
+    # garder uniquement les annotations liées à une image existante
     image_ids = {img["id"] for img in images}
-
-    # keep only annotations linked to real images
     annotations = [ann for ann in annotations if ann["image_id"] in image_ids]
 
-    # keep only images that have at least one annotation
+    # garder uniquement les images avec au moins une annotation
     annotated_ids = {ann["image_id"] for ann in annotations}
     images = [img for img in images if img["id"] in annotated_ids]
 
-    # delete files on disk that are no longer in JSON
+    # créer le dossier de sortie si besoin
+    output_folder = os.path.dirname(output_path)
+    os.makedirs(output_folder, exist_ok=True)
+
+    # copier seulement les images valides
     valid_filenames = {img["file_name"] for img in images}
-    deleted_count = 0
 
-    for file in os.listdir(image_folder):
-        if file.lower().endswith((".jpg", ".jpeg", ".png")) and file not in valid_filenames:
-            os.remove(os.path.join(image_folder, file))
-            deleted_count += 1
+    for file_name in valid_filenames:
+        src = os.path.join(image_folder, file_name)
+        dst = os.path.join(output_folder, file_name)
 
+        if os.path.exists(src):
+            shutil.copy(src, dst)
+
+    # remettre les données nettoyées
     data["images"] = images
     data["annotations"] = annotations
 
-    with open(output_path, "w") as f:
-        json.dump(data, f, indent=4)
+    # sauvegarder le nouveau json clean
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
-    print("Cleaning done.")
-    print("Deleted files:", deleted_count)
-    print("Clean JSON saved to:", output_path)
+    return data
